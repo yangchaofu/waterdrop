@@ -1,7 +1,5 @@
 package test.com.yangc.waterdrop.util;
 
-import static org.junit.Assert.*;
-
 import org.junit.Test;
 
 import com.yangc.waterdrop.util.StrDateSwitchUtil;
