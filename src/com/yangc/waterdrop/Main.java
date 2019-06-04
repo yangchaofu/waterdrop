@@ -3,11 +3,18 @@ package com.yangc.waterdrop;
 import java.io.File;
 import java.util.List;
 
+import com.sun.deploy.uitoolkit.impl.fx.ui.FXConsole;
 import com.yangc.waterdrop.entity.CountResult;
 import com.yangc.waterdrop.service.CountResultService;
 import com.yangc.waterdrop.util.CalacFileMd5Util;
 
 import javafx.application.Application;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -20,6 +27,9 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableColumn.CellDataFeatures;
+import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -27,6 +37,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 /**
  * 程序UI说明 root.Left-程序左边布局为垂直的一些配置想, 使用VBox作为布局面板, 放在root的Left上
@@ -48,13 +59,16 @@ public class Main extends Application {
 	private ScrollPane scrollPaneChart = new ScrollPane();
 	// 程序中间面板的表格区域, 滚动面板, 会上下延伸
 	private ScrollPane scrollPaneTable = new ScrollPane();
+	
+	private List<CountResult> countResultList;
 
 	@Override
 	public void start(Stage primaryStage) {
-
+		countResultList =  new CountResultService().getDefaultList();
 		scrollPaneChart.setPrefHeight(350);
-		scrollPaneChart.setContent(new MyChart().getMyChart(new CountResultService().getDefaultList()));
-//		scrollPaneTable.prefHeight(300);
+		scrollPaneTable.setPrefHeight(250);
+		scrollPaneChart.setContent(new MyChart().getMyChart(countResultList));
+		scrollPaneTable.setContent(new MyTable().getMyTable(countResultList));
 
 		// 将图表面本和表格面本放置到中间面板上
 		// 初始化root面板, 程序运行至此已经完成界面加载
@@ -178,6 +192,58 @@ public class Main extends Application {
 			return root;
 		}
 	}
+	
+	
+	class MyTable {
+
+		public TableView<CountResult> getMyTable(List<CountResult> countResList) {
+			ObservableList<CountResult> obCountResList = FXCollections.observableArrayList();
+			obCountResList.addAll(countResList);
+			
+			TableView<CountResult> tv = new TableView<CountResult>(obCountResList);
+			TableColumn<CountResult, String> tcDate = new TableColumn<>("日期");
+			tcDate.setPrefWidth(330);	
+			
+			tcDate.setResizable(false);
+			TableColumn<CountResult, Number> tcCount = new TableColumn<>("水滴数");
+			tcCount.setPrefWidth(200);
+			tcCount.setResizable(false);
+			TableColumn<CountResult, Number> tcSpeed = new TableColumn<>("滴速");
+			tcSpeed.setPrefWidth(200);
+			tcSpeed.setResizable(false);
+			tcDate.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<CountResult,String>, ObservableValue<String>>() {
+				
+				@Override
+				public ObservableValue<String> call(CellDataFeatures<CountResult, String> param) {
+					SimpleStringProperty date = new SimpleStringProperty(param.getValue().getTickDate());
+					return date;
+				}
+			});
+			tcCount.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<CountResult,Number>, ObservableValue<Number>>() {
+
+				@Override
+				public ObservableValue<Number> call(CellDataFeatures<CountResult, Number> param) {
+					SimpleIntegerProperty count = new SimpleIntegerProperty(param.getValue().getCount());
+					return count;
+				}
+			});
+			tcSpeed.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<CountResult,Number>, ObservableValue<Number>>() {
+
+				@Override
+				public ObservableValue<Number> call(CellDataFeatures<CountResult, Number> param) {
+					SimpleDoubleProperty speed = new SimpleDoubleProperty(param.getValue().getSpeed());
+					return speed;
+				}
+			});
+			
+			tv.getColumns().add(tcDate);
+			tv.getColumns().add(tcCount);
+			tv.getColumns().add(tcSpeed);
+			tv.setPrefWidth(745);			
+			return tv;
+		}
+	}
+
 
 	/**
 	 * 程序入口, 启动主界面
