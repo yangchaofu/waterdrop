@@ -16,12 +16,12 @@ public class DateUtil {
 		oldDate = oldDate.substring(0, 16) + ":00";
 		endDate = endDate.substring(0, 16) + ":00";
 		System.out.println("截取后的时间为:" + oldDate);
-		Date dateTmp = StrDateSwitchUtil.strToDateUnderLine(oldDate);
+		Date dateTmp = DateStrSwitchUtil.strToDateUnderLine(oldDate);
 		long newDateTimestamp = dateTmp.getTime() + ((int)timeGap * 60 * 1000);
-		newDate = StrDateSwitchUtil.dateToStr(new Date(newDateTimestamp));
+		newDate = DateStrSwitchUtil.dateToStr(new Date(newDateTimestamp));
 		
 		//由于字符串不能进行直接的大小比较, 这里需要把endDate转换为long型才能进行比较
-		long endDateTimeStamp = StrDateSwitchUtil.strToDateUnderLine(endDate).getTime();
+		long endDateTimeStamp = DateStrSwitchUtil.strToDateUnderLine(endDate).getTime();
 		//如果新的日期大于了结束日期, 则返回结束标识,获取一天的数据结束
 		if(newDateTimestamp > endDateTimeStamp) {
 			return "越界";

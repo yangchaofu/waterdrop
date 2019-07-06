@@ -3,6 +3,10 @@ package com.yangc.waterdrop.util;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+
 
 /**
  * Hsqldb相关的工具类
@@ -11,6 +15,8 @@ import java.sql.SQLException;
  *
  */
 public class HsqldbUtil {
+	private static String dbPath = PathUtil.getDBPath();
+	
 	/**
 	 * 获取数据库连接
 	 * @return 成功获取的数据库连接
@@ -20,8 +26,6 @@ public class HsqldbUtil {
 			// 加载驱动
 			Class.forName("org.hsqldb.jdbcDriver");
 			// 数据库url
-			System.out.println(PathUtil.getDBPath());
-			String dbPath = PathUtil.getDBPath();
 			
 			System.out.println(dbPath);
 			String url = "jdbc:hsqldb:file:"+ dbPath +";shutdown=true";
@@ -35,6 +39,4 @@ public class HsqldbUtil {
 		}
 		return null;
 	}
-	
-	
 }

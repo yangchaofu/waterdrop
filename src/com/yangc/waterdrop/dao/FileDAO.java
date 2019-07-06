@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import com.yangc.waterdrop.util.StrDateSwitchUtil;
+import com.yangc.waterdrop.util.DateStrSwitchUtil;
 
 /**
  * 对于文件中数据的操作, 读取文件中的数据
@@ -26,7 +26,7 @@ public class FileDAO {
 			String oneLine;
 			while(!(oneLine = br.readLine()).equals("")) {
 				System.out.println(oneLine);
-				dateList.add(StrDateSwitchUtil.strToDate(oneLine));
+				dateList.add(DateStrSwitchUtil.strToDate(oneLine));
 			}
 		} catch (IOException e) {
 			System.out.println("读取日期文件出错!");

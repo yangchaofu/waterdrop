@@ -10,7 +10,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.yangc.waterdrop.util.MySQLUtil;
-import com.yangc.waterdrop.util.StrDateSwitchUtil;
+import com.yangc.waterdrop.util.DateStrSwitchUtil;
 
 public class MySQLDateRecordDAO {
 	/**
@@ -27,7 +27,7 @@ public class MySQLDateRecordDAO {
 		{	
 			int count = 0;
 			for (Date date : dateList) {
-				String strDate = StrDateSwitchUtil.dateToStr(date);
+				String strDate = DateStrSwitchUtil.dateToStr(date);
 //				System.out.println("日期:" + strDate);
 				ps.setString(1, strDate);
 				ps.execute();

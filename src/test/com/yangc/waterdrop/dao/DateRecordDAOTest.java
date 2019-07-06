@@ -18,7 +18,7 @@ public class DateRecordDAOTest {
 //	private MySQLDateRecordDAO mysqlDrDAO = new MySQLDateRecordDAO();
 	private final String path = "C:/Users/yangc/Desktop/main/数据可视化/ref data/1904水滴数据已转换.txt";
 	
-	@Ignore
+
 	@Test
 	public void testInsertList() {
 		File f = new File(path);		
@@ -65,6 +65,7 @@ public class DateRecordDAOTest {
 		System.out.println(oneDay + "的最后一条数据为:" + oneDayLast);
 	}
 	
+	@Ignore
 	@Test
 	public void testGetCountResult() {
 		int timeGap = 5;

@@ -12,7 +12,7 @@ import java.util.List;
 import com.yangc.waterdrop.entity.CountResult;
 import com.yangc.waterdrop.util.DateUtil;
 import com.yangc.waterdrop.util.HsqldbUtil;
-import com.yangc.waterdrop.util.StrDateSwitchUtil;
+import com.yangc.waterdrop.util.DateStrSwitchUtil;
 
 public class DateRecordDAO {
 	/**
@@ -29,7 +29,7 @@ public class DateRecordDAO {
 		{	
 			int count = 0;
 			for (Date date : dateList) {
-				String strDate = StrDateSwitchUtil.dateToStr(date);
+				String strDate = DateStrSwitchUtil.dateToStr(date);
 //				System.out.println("日期:" + strDate);
 				ps.setString(1, strDate);
 				ps.execute();
@@ -206,8 +206,10 @@ public class DateRecordDAO {
 	 * @return 指定日期的第一条数据
 	 */
 	public String selectOneDayFirst(String date) {
+		String up = date.substring(0, 10) + " 23:59:59";
+		System.out.println("oneDayFirst:"+date);
 		String dateTmp = null;
-		String sql = "SELECT date FROM date_record WHERE date >= '" + date + "' ORDER BY date LIMIT 1"; 
+		String sql = "SELECT date FROM date_record WHERE date >= '" + date + "' AND date <='"+ up +"' ORDER BY date LIMIT 1"; 
 		System.out.println("selectOneDayFirst的Sql为:" + sql);
 		// 获取数据库连接
 		Connection c = HsqldbUtil.getConnection();
@@ -243,8 +245,9 @@ public class DateRecordDAO {
 	 * @return 指定日期的最后一条数据, 返回字符串
 	 */
 	public String selectOneDayLast(String date) {
+		String up = date.substring(0, 10) + " 23:59:59";
 		String dateTmp = null;
-		String sql = "SELECT date FROM date_record WHERE date >= '" + date + "' ORDER BY date DESC LIMIT 1"; 
+		String sql = "SELECT date FROM date_record WHERE date >= '" + date + "' AND date <='"+ up +"' ORDER BY date DESC LIMIT 1"; 
 		System.out.println("selectOneDayLast的Sql为:" + sql);
 		// 获取数据库连接
 		Connection c = HsqldbUtil.getConnection();
@@ -310,9 +313,10 @@ public class DateRecordDAO {
 				// 获取执行结果	
 				ResultSet rs = st.executeQuery(sql);		
 		        while (rs.next()) {
-		        	if(rs.getInt(1) == 0) {
-		        		continue;
-		        	}
+		        	// 以下代码的作用是屏蔽掉统计数据中为0的
+//		        	if(rs.getInt(1) == 0) {
+//		        		continue;
+//		        	}
 		        	countResult = new CountResult();
 		        	countResult.setTickDate(tmpDate);		        	
 		        	countResult.setCount(rs.getInt(1));
