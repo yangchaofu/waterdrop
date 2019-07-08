@@ -1,6 +1,8 @@
 package com.yangc.waterdrop.util;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class DateUtil {
 	/**
@@ -16,17 +18,31 @@ public class DateUtil {
 		oldDate = oldDate.substring(0, 16) + ":00";
 		endDate = endDate.substring(0, 16) + ":00";
 		System.out.println("截取后的时间为:" + oldDate);
-		Date dateTmp = DateStrSwitchUtil.strToDateUnderLine(oldDate);
+		Date dateTmp = DateStrSwitchUtil.strToDateSub(oldDate);
 		long newDateTimestamp = dateTmp.getTime() + ((int)timeGap * 60 * 1000);
 		newDate = DateStrSwitchUtil.dateToStr(new Date(newDateTimestamp));
 		
 		//由于字符串不能进行直接的大小比较, 这里需要把endDate转换为long型才能进行比较
-		long endDateTimeStamp = DateStrSwitchUtil.strToDateUnderLine(endDate).getTime();
+		long endDateTimeStamp = DateStrSwitchUtil.strToDateSub(endDate).getTime();
 		//如果新的日期大于了结束日期, 则返回结束标识,获取一天的数据结束
 		if(newDateTimestamp > endDateTimeStamp) {
 			return "越界";
 		}
 		
 		return newDate;
+	}
+	
+	/**
+	 * 将字面值为日期的字符串列表转换为日期列表并返回
+	 * @param dateStrList
+	 * @return
+	 */
+	public static List<Date> strlistToDatelist(List<String> dateStrList){
+		List<Date> dateList = new ArrayList<>();
+		for (String dateStr : dateStrList) {
+			dateList.add(DateStrSwitchUtil.strToDateSub(dateStr));			
+		}
+		
+		return dateList;
 	}
 }

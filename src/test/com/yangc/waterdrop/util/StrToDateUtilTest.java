@@ -9,7 +9,7 @@ public class StrToDateUtilTest {
 	@Test
 	public void testStrToDate() {
 		String date = "2019/04/23 19:22:00";
-		DateStrSwitchUtil.strToDate(date);		
+		DateStrSwitchUtil.strToDateSlash(date);		
 	}
 
 }

@@ -26,7 +26,7 @@ public class FileDAO {
 			String oneLine;
 			while(!(oneLine = br.readLine()).equals("")) {
 				System.out.println(oneLine);
-				dateList.add(DateStrSwitchUtil.strToDate(oneLine));
+				dateList.add(DateStrSwitchUtil.strToDateSlash(oneLine));
 			}
 		} catch (IOException e) {
 			System.out.println("读取日期文件出错!");

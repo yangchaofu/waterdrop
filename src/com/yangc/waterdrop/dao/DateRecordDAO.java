@@ -5,14 +5,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import com.yangc.waterdrop.entity.CountResult;
+import com.yangc.waterdrop.util.DateStrSwitchUtil;
 import com.yangc.waterdrop.util.DateUtil;
 import com.yangc.waterdrop.util.HsqldbUtil;
-import com.yangc.waterdrop.util.DateStrSwitchUtil;
 
 public class DateRecordDAO {
 	/**
@@ -21,13 +22,13 @@ public class DateRecordDAO {
 	 * @return 如果全部插入完成返回1
 	 */
 	public int insertList(List<Date> dateList) {
+		int count = 0;
 		String sql = "INSERT INTO date_record(date) values(?)"; 
 		// 获取数据库连接
 		Connection c = HsqldbUtil.getConnection();
 		// 创建预编译SQL		
 		try (PreparedStatement ps = c.prepareStatement(sql);)
-		{	
-			int count = 0;
+		{				
 			for (Date date : dateList) {
 				String strDate = DateStrSwitchUtil.dateToStr(date);
 //				System.out.println("日期:" + strDate);
@@ -49,7 +50,7 @@ public class DateRecordDAO {
 			}
 		}
 		
-		return 1;
+		return count;
 	}
 	
 	/**
@@ -107,6 +108,41 @@ public class DateRecordDAO {
 	           date = rs.getString(1);
 	           date.replaceAll(".000000", "");
 	        }
+		} catch (SQLException e) {
+			System.out.println("从数据库中查询全部数据失败");
+			e.printStackTrace();
+		} finally {
+			try {
+				c.close();
+				System.out.println("成功关闭连接!");
+			} catch (SQLException e) {
+				System.out.println("数据库连接关闭失败!");
+				e.printStackTrace();
+			}
+		}
+		date = date.replaceAll("\\\\", "/");
+		System.out.println("数据库中的第一个日期为:"+date);
+		return date;
+	}
+	/**
+	 * 查询数据库中特定的一条数据,针对数据库中仅有一条数据的情况
+	 * @return 查询结果
+	 */
+	public String selectSpecial(String specialDate) {		
+		String sql = "SELECT date FROM date_record WHERE date = '" + specialDate + "'"; 		  
+		// 获取数据库连接
+		Connection c = HsqldbUtil.getConnection();
+		// 创建Statement并执行		
+		Statement st;
+		String date = null;
+		try {
+			st = c.createStatement();
+			// 获取执行结果
+			ResultSet rs = st.executeQuery(sql);
+			while (rs.next()) {
+				date = rs.getString(1);
+				date.replaceAll(".000000", "");
+			}
 		} catch (SQLException e) {
 			System.out.println("从数据库中查询全部数据失败");
 			e.printStackTrace();
@@ -301,17 +337,18 @@ public class DateRecordDAO {
 		Statement st;
 		try {
 			st = c.createStatement();
-			do {			
+			do {	
 				categoryDate = DateUtil.getGapDate(tmpDate, lastData, timeGap);
+				if(categoryDate.equals("越界")) {					
+					break;
+				}
 				//编写SQL语句, 该SQL语句查询出date_record表中, date字段大于 tmpDate,并且小于categoryDate的统计数
 				// 并根据时间间隔计算出速度(速度 = 单位时间(分钟)内的水滴数 / 时间间隔)
 				String sql = "SELECT count(*) FROM date_record WHERE date >= '" + tmpDate + "' and date < '" + categoryDate + "'";
-				if(categoryDate.equals("越界")) {
-					break;
-				}
 				System.out.println("当前的sql语句为:"+sql);
 				// 获取执行结果	
-				ResultSet rs = st.executeQuery(sql);		
+				ResultSet rs = st.executeQuery(sql);	
+				DecimalFormat df = new DecimalFormat("0.###");				
 		        while (rs.next()) {
 		        	// 以下代码的作用是屏蔽掉统计数据中为0的
 //		        	if(rs.getInt(1) == 0) {
@@ -320,8 +357,10 @@ public class DateRecordDAO {
 		        	countResult = new CountResult();
 		        	countResult.setTickDate(tmpDate);		        	
 		        	countResult.setCount(rs.getInt(1));
-		        	countResult.setSpeed(countResult.getCount() / timeGap);
-		        	
+		        	double speed = countResult.getCount() / timeGap;
+		        	// 格式化保留三位小数
+		        	String spStr = df.format(speed);
+		        	countResult.setSpeed(Double.valueOf(spStr));
 		            countResList.add(countResult);
 		        }
 		        tmpDate = categoryDate;

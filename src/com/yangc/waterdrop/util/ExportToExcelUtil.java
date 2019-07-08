@@ -7,13 +7,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.poi.ss.formula.functions.Count;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import com.yangc.waterdrop.entity.CountResult;
+
 public class ExportToExcelUtil {
 
-	private static String csvFile = "C://Users//yangc//Desktop";
+//	private static String csvFile = "C://Users//yangc//Desktop";
 
 	/**
 	 * 创建excel
@@ -27,7 +30,7 @@ public class ExportToExcelUtil {
 		// 2.在workbook中添加一个sheet,对应Excel文件中的sheet
 		XSSFSheet sheet = wb.createSheet("sheet1");
 		// 3.设置表头，即每个列的列名
-		String[] titel = { "rowName1", "rowName2", "rowName3", "rowName4" };
+		String[] titel = { "日期时间", "水滴数", "滴速" };
 		// 3.1创建第一行
 		XSSFRow row = sheet.createRow(0);
 		// 此处创建一个序号列
@@ -39,20 +42,14 @@ public class ExportToExcelUtil {
 		}
 		// 写入正式数据
 		for (int i = 0; i < listresult.size(); i++) {
-			// 创建行
 			row = sheet.createRow(i + 1);
-			// 序号
 			row.createCell(0).setCellValue(i + 1);
-			// 医院名称
-			row.createCell(1).setCellValue(listresult.get(i).get("rowKey1").toString());
 			sheet.autoSizeColumn(1, true);
-			// 业务类型
-			row.createCell(2).setCellValue(listresult.get(i).get("rowKey2").toString());
-			// 异常信息
-			row.createCell(3).setCellValue(listresult.get(i).get("rowKey3").toString());
-			// 数量
-			row.createCell(4).setCellValue(listresult.get(i).get("rowKey4").toString());
+			row.createCell(1).setCellValue(listresult.get(i).get("日期时间").toString());
+			row.createCell(2).setCellValue(listresult.get(i).get("水滴数").toString());
+			row.createCell(3).setCellValue(listresult.get(i).get("滴速").toString());
 		}
+		
 		/**
 		 * 上面的操作已经是生成一个完整的文件了，只需要将生成的流转换成文件即可； 下面的设置宽度可有可无，对整体影响不大
 		 */
@@ -72,44 +69,95 @@ public class ExportToExcelUtil {
 		return wb;
 	}
 
+//	/**
+//	 * 用户列表导出
+//	 * 
+//	 * @param userForm
+//	 */
+//	private static String downUserList(List<Map<String, Object>> listresult) {
+//		// getTime()是一个返回当前时间的字符串，用于做文件名称
+//		String name = "test";
+//		// csvFile是我的一个路径，自行设置就行
+//		String ys = csvFile + "//" + name + ".xlsx";
+//		// 1.生成Excel
+//		XSSFWorkbook userListExcel = createUserListExcel(listresult);
+//		try {
+//			// 输出成文件
+//			File file = new File(csvFile);
+//			if (file.exists() || !file.isDirectory()) {
+//				file.mkdirs();
+//			}
+//			// TODO 生成的wb对象传输
+//			FileOutputStream outputStream = new FileOutputStream(new File(ys));
+//			userListExcel.write(outputStream);
+//			outputStream.close();
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//		return name;
+//	}
+	
 	/**
-	 * 用户列表导出
-	 * 
-	 * @param userForm
+	 * 导出数据到Excel中
+	 * @param countResultList 统计结果列表
+	 * @param saveFile 要保存的文件
+	 * @return
 	 */
-	private static String downUserList(List<Map<String, Object>> listresult) {
-		// getTime()是一个返回当前时间的字符串，用于做文件名称
-		String name = "test";
-		// csvFile是我的一个路径，自行设置就行
-		String ys = csvFile + "//" + name + ".xlsx";
+	public static String exportToExcel(List<CountResult> countResultList, File saveFile) {
+		// 构建map
+		List<Map<String, Object>> listresult = buildMap(countResultList);
+		if(listresult == null) {
+			System.out.println("ExportToExcelUtil-exportToExcel-110 listresult为null");
+			return null;
+		}
+		
 		// 1.生成Excel
 		XSSFWorkbook userListExcel = createUserListExcel(listresult);
 		try {
-			// 输出成文件
-			File file = new File(csvFile);
-			if (file.exists() || !file.isDirectory()) {
-				file.mkdirs();
-			}
 			// TODO 生成的wb对象传输
-			FileOutputStream outputStream = new FileOutputStream(new File(ys));
+			FileOutputStream outputStream = new FileOutputStream(saveFile);
 			userListExcel.write(outputStream);
 			outputStream.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return name;
+		return saveFile.getAbsolutePath();
 	}
-
-	public static void main(String[] args) {
-		List<Map<String, Object>> listresult = new ArrayList<>();
-		Map<String, Object> row = new HashMap<>();
-		row.put("rowKey1", "dgsd");
-		row.put("rowKey2", "dgs");
-		row.put("rowKey3", "dg");
-		row.put("rowKey4", "d");
 		
-		listresult.add(row);
-		System.out.println("存储的文件名为：" + downUserList(listresult));
+
+	private static List<Map<String, Object>> buildMap(List<CountResult> countResultList) {
+		List<Map<String, Object>> listresult = new ArrayList<>();
+		
+		if(countResultList.size() > 0) {			
+			for (int i = 0; i < countResultList.size(); i++) {
+				Map<String, Object> row = new HashMap<>();
+				CountResult cr = countResultList.get(i);
+				row.put("日期时间", cr.getTickDate());
+				row.put("水滴数", cr.getCount());
+				row.put("滴速", cr.getSpeed());				
+				listresult.add(row);				
+			}			
+		} else {
+			return null;
+		}
+		
+		return listresult;
 	}
+	
+//	public static void main(String[] args) {
+//		List<Map<String, Object>> listresult = new ArrayList<>();
+//		Map<String, Object> row = new HashMap<>();		
+//		row.put("日期时间", "dgs");
+//		row.put("水滴数", "dg");
+//		row.put("滴速", "d");
+//		Map<String, Object> row2 = new HashMap<>();		
+//		row2.put("日期时间", "dgs");
+//		row2.put("水滴数", "dg");
+//		row2.put("滴速", "d");
+//		
+//		listresult.add(row);
+//		listresult.add(row2);
+//		System.out.println("存储的文件名为：" + downUserList(listresult));
+//	}
 
 }

@@ -9,6 +9,7 @@ import com.yangc.waterdrop.entity.CountResult;
 import com.yangc.waterdrop.service.CountResultService;
 import com.yangc.waterdrop.service.ImportFileService;
 import com.yangc.waterdrop.util.CalacFileMd5Util;
+import com.yangc.waterdrop.util.ExportToExcelUtil;
 
 import javafx.application.Application;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -28,6 +29,8 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Data;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
@@ -160,7 +163,12 @@ public class Main extends Application {
 				return;
 			} else {
 				System.out.println("文件选择器获取的文件为: " + f.getPath());
-				ImportFileService importFileSevice = new ImportFileService(f.getPath());				
+				ImportFileService importFileSevice = new ImportFileService(f.getPath());
+				String insertRes = importFileSevice.insertToData();
+				Alert alert = new Alert(AlertType.INFORMATION);
+				alert.setContentText(insertRes);
+				alert.show();
+				System.out.println(insertRes);
 			}
 		});
 		Separator sep1 = new Separator();
@@ -176,9 +184,9 @@ public class Main extends Application {
 		Button btnSetTimeGap = new Button("确定");
 		Separator sep3 = new Separator();
 		Button btnExportTodayToExcel = new Button("导出今日数据到Excel");
-		Button btnExportAllToExcel = new Button("导出全部数据到Excel");
+//		Button btnExportAllToExcel = new Button("导出全部数据到Excel");
 		left.getChildren().addAll(btnImportFile, sep1, lbStartDate, dpStartDate, btnSetDateScope, sep2, lbTimeGap,
-				tfTimeGap, btnSetTimeGap, sep3, btnExportTodayToExcel, btnExportAllToExcel);
+				tfTimeGap, btnSetTimeGap, sep3, btnExportTodayToExcel);
 		left.setPrefWidth(150);
 		left.setPrefHeight(600);
 		left.setMargin(btnImportFile, new Insets(20, 0, 0, 10));
@@ -187,42 +195,78 @@ public class Main extends Application {
 		left.setMargin(tfTimeGap, new Insets(0, 20, 0, 10));
 		left.setMargin(btnSetTimeGap, new Insets(0, 0, 0, 10));
 		left.setMargin(btnExportTodayToExcel, new Insets(0, 0, 0, 10));
-		left.setMargin(btnExportAllToExcel, new Insets(0, 0, 0, 10));
+//		left.setMargin(btnExportAllToExcel, new Insets(0, 0, 0, 10));
 
 		// 以下代码设置事件
 		// 导出全部数据到excel表的按钮事件
-		btnExportAllToExcel.setOnAction(e -> {
-			System.out.println("导出全部数据到excel被点击!");
-		});
+//		btnExportAllToExcel.setOnAction(e -> {
+//			System.out.println("导出全部数据到excel被点击!");
+//		});
 		// 导出今日数据到excel表
 		btnExportTodayToExcel.setOnAction(e -> {
-			countResultList.forEach(new Consumer<CountResult>() {
+			if(countResultList == null || countResultList.size() == 0) {
+				Alert alert = new Alert(AlertType.INFORMATION);
+				alert.setContentText(label + " 没有数据,无法导出!!!");
+				alert.show();
+				System.out.println(label + " 没有数据,无法导出!!!");
+			} else {	
+				Stage saveFile = new Stage();
+				System.out.println("导出今日数据到Excel按钮被点击");
+				FileChooser fc = new FileChooser();
+				fc.setInitialFileName(label + "数据");
+				
+				fc.getExtensionFilters().add(new ExtensionFilter("Excel 2007 - Excel 2019", "*.xlsx"));
+				fc.getExtensionFilters().add(new ExtensionFilter("Excel 2003", "*.xls"));
 
-				@Override
-				public void accept(CountResult t) {
-					System.out.println(t.getTickDate());					
+				File f = fc.showSaveDialog(saveFile);
+				if (f == null) {
+					return;
+				} else {
+					System.out.println("文件选择器获取的文件为: " + f.getPath());
+					ExportToExcelUtil.exportToExcel(countResultList, f);
+					System.out.println("文件保存成功-"+f.getAbsolutePath());
+					Alert alert = new Alert(AlertType.INFORMATION);
+					alert.setContentText("文件保存成功:  " + f.getAbsolutePath());
+					alert.show();
 				}
-			});
-			System.out.println("导出今日数据到excel被点击!");
+				
+			}			
 		});
 		// 设置日期范围的按钮事件
 		btnSetDateScope.setOnAction(e -> {
-			System.out.println(dpStartDate.getValue().toString());
+			String inputDate = dpStartDate.getValue().toString();
+			if(inputDate.equals(label)) {
+				Alert alert = new Alert(AlertType.INFORMATION);
+				alert.setContentText("已经是当天的数据!!!");
+				alert.show();
+				System.out.println("已经是当天的数据!!!");
+			}else {				
+				label = inputDate;
+				reDraw(2, inputDate);
+				System.out.println(inputDate);
+			}
 		});
 		// 设置时间间隔的按钮事件
 		btnSetTimeGap.setOnAction(e -> {
-			String timeGap = tfTimeGap.getText();
-			System.out.println("设置时间间隔为：" + timeGap);			
-			// 设置新得时间间隔
-			countResultService.setTimeGap(Integer.parseInt(timeGap));
-			reDraw(2, label);
+			if(countResultList == null || countResultList.size() == 0) {
+				Alert alert = new Alert(AlertType.INFORMATION);
+				alert.setContentText("没有数据,无法设置时间间隔!!!");
+				alert.show();
+				System.out.println("已经是当天的数据!!!");
+			}else {				
+				String timeGap = tfTimeGap.getText();
+				System.out.println("设置时间间隔为：" + timeGap);			
+				// 设置新得时间间隔
+				countResultService.setTimeGap(Integer.parseInt(timeGap));
+				reDraw(2, label);
+			}
 		});
 		
 		if(dataFlag == 0) {
 			btnSetDateScope.setDisable(true);
 			btnSetTimeGap.setDisable(true);
 			btnExportTodayToExcel.setDisable(true);
-			btnExportAllToExcel.setDisable(true);
+//			btnExportAllToExcel.setDisable(true);
 			tfTimeGap.setDisable(true);
 			dpStartDate.setDisable(true);
 		}
@@ -230,14 +274,13 @@ public class Main extends Application {
 		return left;
 	}
 
-	private void reDraw(int flag, String oneDay) {
+	private void reDraw(int flag, String oneDay) {				
 		if(flag == 1 && oneDay == null) {
 			// 根据新的时间间隔获取新的数据
 			countResultList = countResultService.getDefaultList();
 			// 将新的数据绘制到面板上
 			scrollPaneChart.setContent(new MyChart().getMyChart(countResultList));
-			scrollPaneTable.setContent(new MyTable().getMyTable(countResultList));
-			leftPane = getLeftPane();
+			scrollPaneTable.setContent(new MyTable().getMyTable(countResultList));			
 		} else if(flag == 2 && oneDay != null){
 			// 根据新的时间间隔获取新的数据
 			countResultList = countResultService.getOneDayList(oneDay);
@@ -246,10 +289,8 @@ public class Main extends Application {
 			}
 			// 将新的数据绘制到面板上
 			scrollPaneChart.setContent(new MyChart().getMyChart(countResultList));
-			scrollPaneTable.setContent(new MyTable().getMyTable(countResultList));
-			leftPane = getLeftPane();
-		}
-		
+			scrollPaneTable.setContent(new MyTable().getMyTable(countResultList));				
+		}		
 	}
 
 	class MyChart {

@@ -1,6 +1,7 @@
 package com.yangc.waterdrop.service;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -47,6 +48,16 @@ public class CountResultService {
 		String oneDayLast = drDAO.selectOneDayLast(oneDay);
 		if(oneDayFirst == null || oneDayLast == null) {
 			return null;
+		}
+		// 当天仅一条数据
+		if(oneDayFirst.equals(oneDayLast)) {
+			List<CountResult> crList = new ArrayList<>();
+			CountResult cr = new CountResult();
+			cr.setCount(1);
+			cr.setTickDate(oneDayLast.replaceAll(".000000", ""));
+			cr.setSpeed(1.0);
+			crList.add(cr);
+			return crList;
 		}
 		
 		return drDAO.getCountResult(oneDayFirst, oneDayLast, timeGap);		

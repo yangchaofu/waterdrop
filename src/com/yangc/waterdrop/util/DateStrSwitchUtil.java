@@ -6,11 +6,11 @@ import java.util.Date;
 
 public class DateStrSwitchUtil {
 	/**
-	 * 将传入的str转换为Date并返回
+	 * 将传入的str转换为Date并返回,日期格式为带斜杠的
 	 * @param str 待转换的字符串
 	 * @return 转换后的日期
 	 */
-	public static Date strToDate(String str) {
+	public static Date strToDateSlash(String str) {
         SimpleDateFormat sdf =new SimpleDateFormat("yyyy/MM/dd HH:mm:ss" );
         Date d = null;
                
@@ -24,12 +24,13 @@ public class DateStrSwitchUtil {
 		return d;
 	}
 	
+	
 	/**
 	 * 将传入的str转换为Date并返回
 	 * @param str 待转换的字符串
 	 * @return 转换后的日期
 	 */
-	public static Date strToDateUnderLine(String str) {
+	public static Date strToDateSub(String str) {
         SimpleDateFormat sdf =new SimpleDateFormat("yyyy-MM-dd HH:mm:ss" );
         Date d = null;
                
